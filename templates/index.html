@@ -4,9 +4,68 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ title }}</title>
-    <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-    <h1 class="index-title">VPP Observer</h1>
+    <h1>VPP Observer</h1>
+
+    <p>Вставьте вывод <code>show runtime</code> в поле ниже:</p>
+
+    <form method="post" action="/parse">
+        <div>
+            <textarea id="raw_text" name="raw_text" rows="30" cols="140">{{ raw_text }}</textarea>
+        </div>
+        <br>
+        <div>
+            <button type="submit">Разобрать</button>
+        </div>
+    </form>
+
+    {% if parsed_show_runtime %}
+
+        <h2>Сводка по threads</h2>
+
+        <table border="1" cellpadding="6" cellspacing="0">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Имя потока</th>
+                    <th>Lcore</th>
+                    <th>Time</th>
+                    <th>Internal node vector rate</th>
+                    <th>Loops/sec</th>
+                    <th>In</th>
+                    <th>Out</th>
+                    <th>Drop</th>
+                    <th>Punt</th>
+                    <th>Сырые строки</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for thread in parsed_show_runtime.threads %}
+                    <tr>
+                        <td>{{ thread.id }}</td>
+                        <td>{{ thread.name }}</td>
+                        <td>{{ thread.lcore }}</td>
+                        <td>{{ thread.time }}</td>
+                        <td>{{ thread.internal_node_vector_rate }}</td>
+                        <td>{{ thread.loops_per_sec }}</td>
+                        <td>{{ thread.vector_rates["in"] }}</td>
+                        <td>{{ thread.vector_rates["out"] }}</td>
+                        <td>{{ thread.vector_rates["drop"] }}</td>
+                        <td>{{ thread.vector_rates["punt"] }}</td>
+                        <td>
+                            <details>
+                                <summary>Показать</summary>
+                                <pre>
+                                    {% for line in thread.table_lines %}{{ line }}
+                                    {% endfor %}
+                                </pre>
+                            </details>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
 </body>
 </html>
