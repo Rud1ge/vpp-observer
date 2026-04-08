@@ -1,7 +1,9 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Form, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+
+from utils.parser import parse_show_runtime
 
 app = FastAPI()
 
@@ -14,5 +16,20 @@ async def index(request: Request):
     return templates.TemplateResponse(
         request=request,
         name="index.html",
-        context={"title": "VPP Observer"},
+        context={
+            "title": "VPP Observer",
+        },
+    )
+
+
+@app.post("/parse", response_class=HTMLResponse)
+async def show_runtime(request: Request, raw_text: str = Form(...)):
+    return templates.TemplateResponse(
+        request=request,
+        name="index.html",
+        context={
+            "title": "VPP Observer",
+            "raw_text": raw_text,
+            "parsed_show_runtime": parse_show_runtime(raw_text),
+        },
     )
