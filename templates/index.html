@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
     <title>{{ title }}</title>
 </head>
 <body>
-    <h1>VPP Observer</h1>
-
-    <p>Вставьте вывод <code>show runtime</code> в поле ниже:</p>
-
-    <form method="post" action="/parse">
+    <h1 class="index-title">VPP Observer</h1>
+    <p class="index-p">Вставьте вывод <code>show runtime</code> в поле ниже:</p>
+    
+    <form class="index-form" method="post" action="/parse">
         <div>
             <textarea id="raw_text" name="raw_text" rows="30" cols="140">{{ raw_text }}</textarea>
         </div>
@@ -20,11 +21,13 @@
         </div>
     </form>
 
-    {% if parsed_show_runtime %}
+    {% if parsed_show_runtime and not parsed_show_runtime.threads %}
+        <p class="index-p">Не удалось разобрать вывод. Проверьте, что вставлен полный вывод команды <code>show runtime</code>.</p>
+    {% endif %}
 
-        <h2>Сводка по threads</h2>
-
-        <table border="1" cellpadding="6" cellspacing="0">
+    {% if parsed_show_runtime and parsed_show_runtime.threads %}
+        <p class="index-p">Сводная информация по потокам VPP</p>
+        <table class="index-table" border="1" cellpadding="6" cellspacing="0">
             <thead>
                 <tr>
                     <th>ID</th>
