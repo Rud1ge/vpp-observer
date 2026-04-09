@@ -20,37 +20,29 @@ def parse_show_runtime(raw_text: str) -> dict:
 
     for line in raw_text.splitlines():
         stripped_line = line.strip()
+
         thread_match = THREAD_HEADER.match(stripped_line)
         time_thread_match = TIME_THREAD.match(stripped_line)
         vector_thread_match = VECTOR_THREAD.match(stripped_line)
 
+        # Начало нового блока thread: перед переключением сохраняем предыдущий.
         if thread_match:
-            # Сохраняем предыдущий поток, если он уже был собран
             if current_thread is not None:
                 result["threads"].append(current_thread)
 
-            # Начинаем собирать новый поток
             current_thread = {
                 "id": int(thread_match.group("thread_id")),
                 "name": thread_match.group("thread_name"),
                 "lcore": int(thread_match.group("thread_lcore")),
-                "time": None,
-                "internal_node_vector_rate": None,
-                "loops_per_sec": None,
-                "vector_rates": {
-                    "in": None,
-                    "out": None,
-                    "drop": None,
-                    "punt": None,
-                },
                 "table_lines": [],
             }
             continue
 
-        # Пока не встретили Thread, остальные строки пропускаем
+        # До первого найденного thread полезных данных для сохранения нет.
         if current_thread is None:
             continue
 
+        # Сохраняем метрики thread, если строка соответствует ожидаемому формату.
         if time_thread_match:
             current_thread["time"] = float(time_thread_match.group("time"))
             current_thread["internal_node_vector_rate"] = float(
@@ -61,6 +53,7 @@ def parse_show_runtime(raw_text: str) -> dict:
             )
             continue
 
+        # Сохраняем агрегированные vector rates, если они присутствуют в блоке.
         if vector_thread_match:
             current_thread["vector_rates"] = {
                 "in": float(vector_thread_match.group("in")),
@@ -70,11 +63,11 @@ def parse_show_runtime(raw_text: str) -> dict:
             }
             continue
 
-        # Все остальные непустые строки сохраняем как сырой табличный вывод
+        # Все прочие непустые строки сохраняем как исходный табличный вывод блока.
         if stripped_line:
             current_thread["table_lines"].append(line)
 
-    # После цикла сохраняем последний собранный поток
+    # После завершения прохода сохраняем последний собранный thread.
     if current_thread is not None:
         result["threads"].append(current_thread)
 
