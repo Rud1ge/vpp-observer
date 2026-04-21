@@ -1,2 +1,5 @@
 # vpp-observer
-Interpretation of VPP (Vector Packet Processing) outputs
+
+Parses `show runtime` output and renders the current thread and node statistics in a web interface.
+
+![Screenshot](static/images/example.jpg)
