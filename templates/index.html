@@ -32,17 +32,17 @@
         <table class="index-table" border="1" cellpadding="6" cellspacing="0">
             <thead>
                 <tr>
-                    <th>ID</th>
-                    <th>Имя потока</th>
-                    <th>Lcore</th>
-                    <th>Time</th>
-                    <th>Internal node vector rate</th>
-                    <th>Loops/sec</th>
-                    <th>In</th>
-                    <th>Out</th>
-                    <th>Drop</th>
-                    <th>Punt</th>
-                    <th>Сырые строки</th>
+                    <th title="Индекс потока VPP в выводе show runtime">ID</th>
+                    <th title="Имя потока VPP, например vpp_main или vpp_wk_0">Имя потока</th>
+                    <th title="Логическое ядро CPU, к которому привязан поток">Lcore</th>
+                    <th title="Время в секундах с момента последнего clear runtime">Time</th>
+                    <th title="Средняя длина вектора для внутренних узлов потока; чем выше, тем больше пакетов VPP обрабатывает батчами">Internal node vector rate</th>
+                    <th title="Число итераций основного цикла потока в секунду">Loops/sec</th>
+                    <th title="Скорость входящих векторов в секунду">In</th>
+                    <th title="Скорость исходящих векторов в секунду">Out</th>
+                    <th title="Скорость отброшенных векторов в секунду">Drop</th>
+                    <th title="Скорость punt-векторов в секунду">Punt</th>
+                    <th title="Подробная таблица узлов данного потока">Таблица узлов</th>
                 </tr>
             </thead>
             <tbody>
@@ -59,14 +59,39 @@
                         <td>{{ thread["drop"] }}</td>
                         <td>{{ thread["punt"] }}</td>
                         <td>
-                            <details>
-                                <summary>Показать</summary>
-                                <pre>
-                                    {% for line in thread.table_lines %}
-                                        {{ line }}
-                                    {% endfor %}
-                                </pre>
-                            </details>
+                            {% if thread["table_rows"] %}
+                                <details>
+                                    <summary>Показать</summary>
+                                    <table border="1" cellpadding="4" cellspacing="0">
+                                        <thead>
+                                            <tr>
+                                            <th title="Имя узла VPP packet-processing graph">Name</th>
+                                            <th title="Текущее состояние узла: active, polling, running, event wait, any wait, suspended и т.д.">State</th>
+                                            <th title="Число вызовов узла с момента последнего clear runtime">Calls</th>
+                                            <th title="Число обработанных векторных элементов с момента последнего clear runtime">Vectors</th>
+                                            <th title="Число suspend-операций узла с момента последнего clear runtime">Suspends</th>
+                                            <th title="Средняя стоимость обработки: обычно packet-clocks на vector/packet; если vectors нет — на вызов или suspend">Clocks</th>
+                                            <th title="Среднее число векторов на один вызов узла">Vectors/Call</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for row in thread["table_rows"] %}
+                                                <tr>
+                                                    <td>{{ row["name"] }}</td>
+                                                    <td>{{ row["state"] }}</td>
+                                                    <td>{{ row["calls"] }}</td>
+                                                    <td>{{ row["vectors"] }}</td>
+                                                    <td>{{ row["suspends"] }}</td>
+                                                    <td>{{ row["clocks"] }}</td>
+                                                    <td>{{ row["vectors_per_call"] }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </details>
+                            {% else %}
+                                <span>Нет данных</span>
+                            {% endif %}
                         </td>
                     </tr>
                 {% endfor %}
