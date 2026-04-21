@@ -10,7 +10,7 @@
 <body>
     <h1 class="index-title">VPP Observer</h1>
     <p class="index-p">Вставьте вывод <code>show runtime</code> в поле ниже:</p>
-    
+
     <form class="index-form" method="post" action="/parse">
         <div>
             <textarea id="raw_text" name="raw_text" rows="30" cols="140">{{ raw_text }}</textarea>
@@ -21,11 +21,13 @@
         </div>
     </form>
 
-    {% if parsed_show_runtime and not parsed_show_runtime.threads %}
-        <p class="index-p">Не удалось разобрать вывод. Проверьте, что вставлен полный вывод команды <code>show runtime</code>.</p>
+    {% if parsed_show_runtime is defined and not parsed_show_runtime %}
+        <p class="index-p">
+            Не удалось разобрать вывод. Проверьте, что вставлен полный вывод команды <code>show runtime</code>.
+        </p>
     {% endif %}
 
-    {% if parsed_show_runtime and parsed_show_runtime.threads %}
+    {% if parsed_show_runtime %}
         <p class="index-p">Сводная информация по потокам VPP</p>
         <table class="index-table" border="1" cellpadding="6" cellspacing="0">
             <thead>
@@ -44,23 +46,24 @@
                 </tr>
             </thead>
             <tbody>
-                {% for thread in parsed_show_runtime.threads %}
+                {% for thread in parsed_show_runtime %}
                     <tr>
-                        <td>{{ thread.id }}</td>
-                        <td>{{ thread.name }}</td>
-                        <td>{{ thread.lcore }}</td>
-                        <td>{{ thread.time }}</td>
-                        <td>{{ thread.internal_node_vector_rate }}</td>
-                        <td>{{ thread.loops_per_sec }}</td>
-                        <td>{{ thread.vector_rates["in"] }}</td>
-                        <td>{{ thread.vector_rates["out"] }}</td>
-                        <td>{{ thread.vector_rates["drop"] }}</td>
-                        <td>{{ thread.vector_rates["punt"] }}</td>
+                        <td>{{ thread["id"] }}</td>
+                        <td>{{ thread["name"] }}</td>
+                        <td>{{ thread["lcore"] }}</td>
+                        <td>{{ thread["time"] }}</td>
+                        <td>{{ thread["vector_rate"] }}</td>
+                        <td>{{ thread["loops_per_sec"] }}</td>
+                        <td>{{ thread["in"] }}</td>
+                        <td>{{ thread["out"] }}</td>
+                        <td>{{ thread["drop"] }}</td>
+                        <td>{{ thread["punt"] }}</td>
                         <td>
                             <details>
                                 <summary>Показать</summary>
                                 <pre>
-                                    {% for line in thread.table_lines %}{{ line }}
+                                    {% for line in thread.table_lines %}
+                                        {{ line }}
                                     {% endfor %}
                                 </pre>
                             </details>
