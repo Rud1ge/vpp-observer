@@ -17,3 +17,16 @@
 .thread-table {
     margin: 0 auto;
 }
+
+.warning-cell,
+.warning-row {
+    background-color: #ffdb8b;
+}
+
+.active-cell {
+    background-color: #d9f2d9;
+}
+
+.state-running {
+    background-color: #dbeafe;
+}
