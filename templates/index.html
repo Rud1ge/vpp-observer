@@ -52,12 +52,12 @@
                         <td>{{ thread["name"] }}</td>
                         <td>{{ thread["lcore"] }}</td>
                         <td>{{ thread["time"] }}</td>
-                        <td>{{ thread["vector_rate"] }}</td>
+                        <td class="{% if thread['vector_rate']|float > 0 %}active-cell{% endif %}">{{ thread["vector_rate"] }}</td>
                         <td>{{ thread["loops_per_sec"] }}</td>
-                        <td>{{ thread["in"] }}</td>
-                        <td>{{ thread["out"] }}</td>
-                        <td>{{ thread["drop"] }}</td>
-                        <td>{{ thread["punt"] }}</td>
+                        <td class="{% if thread['in']|float > 0 %}active-cell{% endif %}">{{ thread["in"] }}</td>
+                        <td class="{% if thread['out']|float > 0 %}active-cell{% endif %}">{{ thread["out"] }}</td>
+                        <td class="{% if thread['drop']|float > 0 %}warning-cell{% endif %}">{{ thread["drop"] }}</td>
+                        <td class="{% if thread['punt']|float > 0 %}warning-cell{% endif %}">{{ thread["punt"] }}</td>
                         <td>
                             {% if thread["table_rows"] %}
                                 <details>
@@ -76,11 +76,11 @@
                                         </thead>
                                         <tbody>
                                             {% for row in thread["table_rows"] %}
-                                                <tr>
+                                                <tr class="{% if ('drop' in row['name'] or 'punt' in row['name']) and row['vectors']|int > 0 %}warning-row{% endif %}">
                                                     <td>{{ row["name"] }}</td>
-                                                    <td>{{ row["state"] }}</td>
+                                                    <td class="{% if row['state'] == 'running' %}state-running{% endif %}">{{ row["state"] }}</td>
                                                     <td>{{ row["calls"] }}</td>
-                                                    <td>{{ row["vectors"] }}</td>
+                                                    <td class="{% if ('drop' in row['name'] or 'punt' in row['name']) and row['vectors']|int > 0 %}warning-cell{% endif %}">{{ row["vectors"] }}</td>
                                                     <td>{{ row["suspends"] }}</td>
                                                     <td>{{ row["clocks"] }}</td>
                                                     <td>{{ row["vectors_per_call"] }}</td>
