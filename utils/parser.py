@@ -122,6 +122,6 @@ class Parser:
 
         for thread in threads:
             thread["table_rows"] = self.parse_thread_table(
-                thread.pop("table_lines", []))
+                thread.pop("table_lines"))
 
         return threads
