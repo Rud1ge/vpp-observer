@@ -3,17 +3,13 @@ import re
 
 class Parser:
     THREAD_NAME_REGEX = re.compile(
-        r"^Thread\s+(?P<thread_id>\d+)\s+(?P<thread_name>.+)\s+\(lcore\s+(?P<thread_lcore>\d+)\)$"
-    )
+        r'^Thread (?P<thread_id>\d+) (?P<thread_name>\S+) \(lcore (?P<thread_lcore>\d+)\)$')
     THREAD_TIME_REGEX = re.compile(
-        r"^Time\s+(?P<time>\d+(?:\.\d+)?),\s+10 sec internal node vector rate\s+(?P<vector_rate>\d+(?:\.\d+)?)\s+loops/sec\s+(?P<loops_per_sec>\d+(?:\.\d+)?)$"
-    )
+        r'^Time (?P<time>\d+\.\d+), 10 sec internal node vector rate (?P<vector_rate>\d+\.\d+) loops/sec (?P<loops_per_sec>\d+\.\d+)$')
     THREAD_VECTOR_REGEX = re.compile(
-        r"^vector rates in\s+(?P<in>\S+),\s+out\s+(?P<out>\S+),\s+drop\s+(?P<drop>\S+),\s+punt\s+(?P<punt>\S+)$"
-    )
+        r'^vector rates in (?P<in>\d+\.\d+e[+-]?\d+), out (?P<out>\d+\.\d+e[+-]?\d+), drop (?P<drop>\d+\.\d+e[+-]?\d+), punt (?P<punt>\d+\.\d+e[+-]?\d+)$')
     TABLE_ROW_REGEX = re.compile(
-        r'^(?P<name>.+?)\s+(?P<state>"?(?:event wait|any wait|not started|suspended|running|polling|active)"?)\s+(?P<calls>\S+)\s+(?P<vectors>\S+)\s+(?P<suspends>\S+)\s+(?P<clocks>\S+)\s+(?P<vectors_per_call>\S+)$'
-    )
+        r'^(?P<name>.+?)\s*"?(?P<state>event wait|any wait|one time event wait|clock wait|interrupt wait|not started|suspended|running|polling|active|disabled|done|yield)"?\s+(?P<calls>\d+)\s+(?P<vectors>\d+)\s+(?P<suspends>\d+)\s+(?P<clocks>\d+(?:\.\d+)?(?:e[+-]?\d+)?)\s+(?P<vectors_per_call>\d+\.\d+)$')
 
     @staticmethod
     def normalize_raw_text(raw_text):
