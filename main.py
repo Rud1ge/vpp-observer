@@ -3,7 +3,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from utils.parser import Parser
+from utils.parser import ShowRuntime
 
 app = FastAPI()
 
@@ -30,6 +30,6 @@ async def show_runtime(request: Request, raw_text: str = Form(...)):
         context={
             "title": "VPP Observer",
             "raw_text": raw_text,
-            "parsed_show_runtime": Parser().parse_show_runtime(raw_text),
+            "parsed_show_runtime": ShowRuntime(raw_text).parsing(),
         },
     )
