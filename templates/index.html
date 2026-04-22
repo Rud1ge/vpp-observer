@@ -48,18 +48,18 @@
             <tbody>
                 {% for thread in parsed_show_runtime %}
                     <tr>
-                        <td>{{ thread["id"] }}</td>
-                        <td>{{ thread["name"] }}</td>
-                        <td>{{ thread["lcore"] }}</td>
-                        <td>{{ thread["time"] }}</td>
-                        <td class="{% if thread['vector_rate']|float > 0 %}active-cell{% endif %}">{{ thread["vector_rate"] }}</td>
-                        <td>{{ thread["loops_per_sec"] }}</td>
-                        <td class="{% if thread['in']|float > 0 %}active-cell{% endif %}">{{ thread["in"] }}</td>
-                        <td class="{% if thread['out']|float > 0 %}active-cell{% endif %}">{{ thread["out"] }}</td>
-                        <td class="{% if thread['drop']|float > 0 %}warning-cell{% endif %}">{{ thread["drop"] }}</td>
-                        <td class="{% if thread['punt']|float > 0 %}warning-cell{% endif %}">{{ thread["punt"] }}</td>
+                        <td>{{ thread["thread_id"] }}</td>
+                        <td>{{ thread["thread_name"] }}</td>
+                        <td>{{ thread["thread_lcore"] }}</td>
+                        <td>{{ thread["thread_time"] }}</td>
+                        <td class="{% if thread['thread_vector_rate'] > 0 %}active-cell{% endif %}">{{ thread["thread_vector_rate"] }}</td>
+                        <td>{{ thread["thread_loops_per_sec"] }}</td>
+                        <td class="{% if thread['thread_in'] > 0 %}active-cell{% endif %}">{{ thread["thread_in"] }}</td>
+                        <td class="{% if thread['thread_out'] > 0 %}active-cell{% endif %}">{{ thread["thread_out"] }}</td>
+                        <td class="{% if thread['thread_drop'] > 0 %}warning-cell{% endif %}">{{ thread["thread_drop"] }}</td>
+                        <td class="{% if thread['thread_punt'] > 0 %}warning-cell{% endif %}">{{ thread["thread_punt"] }}</td>
                         <td>
-                            {% if thread["table_rows"] %}
+                            {% if thread["table"] %}
                                 <details>
                                     <summary>Показать</summary>
                                     <table class="thread-table" border="1" cellpadding="6" cellspacing="0">
@@ -75,15 +75,15 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {% for row in thread["table_rows"] %}
-                                                <tr class="{% if ('drop' in row['name'] or 'punt' in row['name']) and row['vectors']|int > 0 %}warning-row{% endif %}">
-                                                    <td>{{ row["name"] }}</td>
-                                                    <td class="{% if row['state'] == 'running' %}state-running{% endif %}">{{ row["state"] }}</td>
-                                                    <td>{{ row["calls"] }}</td>
-                                                    <td class="{% if ('drop' in row['name'] or 'punt' in row['name']) and row['vectors']|int > 0 %}warning-cell{% endif %}">{{ row["vectors"] }}</td>
-                                                    <td>{{ row["suspends"] }}</td>
-                                                    <td>{{ row["clocks"] }}</td>
-                                                    <td>{{ row["vectors_per_call"] }}</td>
+                                            {% for row in thread["table"] %}
+                                                <tr class="{% if ('drop' in row['table_process'] or 'punt' in row['table_process']) and row['table_vectors'] > 0 %}warning-row{% endif %}">
+                                                    <td>{{ row["table_process"] }}</td>
+                                                    <td class="{% if row['table_state'] == 'running' %}state-running{% endif %}">{{ row["table_state"] }}</td>
+                                                    <td>{{ row["table_calls"] }}</td>
+                                                    <td class="{% if ('drop' in row['table_process'] or 'punt' in row['table_process']) and row['table_vectors'] > 0 %}warning-cell{% endif %}">{{ row["table_vectors"] }}</td>
+                                                    <td>{{ row["table_suspends"] }}</td>
+                                                    <td>{{ row["table_clocks"] }}</td>
+                                                    <td>{{ row["table_vectors_per_call"] }}</td>
                                                 </tr>
                                             {% endfor %}
                                         </tbody>
