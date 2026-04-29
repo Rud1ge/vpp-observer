@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,11 +8,27 @@
     <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
     <title>{{ title }}</title>
 </head>
+
 <body>
-    <h1 class="index-title">VPP Observer</h1>
+    <nav class="parser-menu">
+        <a href="/vpp-show-runtime" class="parser-menu-item {% if mode == 'vpp_show_runtime' %}parser-menu-item-active{% endif %}">
+            Разобрать вывод show runtime VPP NGFW
+        </a>
+        <a href="/esr-cli" class="parser-menu-item {% if mode == 'cli_esr' %}parser-menu-item-active{% endif %}">
+            Разобрать вывод CLI ESR
+        </a>
+    </nav>
+
+    {% if mode is none %}
+    <h1 class="index-title">Observer</h1>
+    <p class="index-p">Выберите режим разбора вывода.</p>
+    {% endif %}
+
+    {% if mode == "vpp_show_runtime" %}
+    <h1 class="index-title">VPP NGFW Observer</h1>
     <p class="index-p">Вставьте вывод <code>show runtime</code> в поле ниже:</p>
 
-    <form class="index-form" method="post" action="/parse">
+    <form class="index-form" method="post" action="/vpp-show-runtime/parse">
         <div>
             <textarea id="raw_text" name="raw_text" rows="30" cols="140">{{ raw_text }}</textarea>
         </div>
@@ -22,81 +39,115 @@
     </form>
 
     {% if parsed_show_runtime is defined and not parsed_show_runtime %}
-        <p class="index-p">
-            Не удалось разобрать вывод. Проверьте, что вставлен полный вывод команды <code>show runtime</code>.
-        </p>
+    <p class="index-p">
+        Не удалось разобрать вывод. Проверьте, что вставлен полный вывод команды <code>show runtime</code>.
+    </p>
     {% endif %}
 
     {% if parsed_show_runtime %}
-        <p class="index-p">Сводная информация по потокам VPP</p>
-        <table class="index-table" border="1" cellpadding="6" cellspacing="0">
-            <thead>
-                <tr>
-                    <th title="Индекс потока VPP в выводе show runtime">ID</th>
-                    <th title="Имя потока VPP, например vpp_main или vpp_wk_0">Имя потока</th>
-                    <th title="Логическое ядро CPU, к которому привязан поток">Lcore</th>
-                    <th title="Время в секундах с момента последнего clear runtime">Time</th>
-                    <th title="Средняя длина вектора для внутренних узлов потока; чем выше, тем больше пакетов VPP обрабатывает батчами">Internal node vector rate</th>
-                    <th title="Число итераций основного цикла потока в секунду">Loops/sec</th>
-                    <th title="Скорость входящих векторов в секунду">In</th>
-                    <th title="Скорость исходящих векторов в секунду">Out</th>
-                    <th title="Скорость отброшенных векторов в секунду">Drop</th>
-                    <th title="Скорость punt-векторов в секунду">Punt</th>
-                    <th title="Подробная таблица узлов данного потока">Таблица узлов</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for thread in parsed_show_runtime %}
-                    <tr>
-                        <td>{{ thread["thread_id"] }}</td>
-                        <td>{{ thread["thread_name"] }}</td>
-                        <td>{{ thread["thread_lcore"] }}</td>
-                        <td>{{ thread["thread_time"] }}</td>
-                        <td class="{% if thread['thread_vector_rate'] > 0 %}active-cell{% endif %}">{{ thread["thread_vector_rate"] }}</td>
-                        <td>{{ thread["thread_loops_per_sec"] }}</td>
-                        <td class="{% if thread['thread_in'] > 0 %}active-cell{% endif %}">{{ thread["thread_in"] }}</td>
-                        <td class="{% if thread['thread_out'] > 0 %}active-cell{% endif %}">{{ thread["thread_out"] }}</td>
-                        <td class="{% if thread['thread_drop'] > 0 %}warning-cell{% endif %}">{{ thread["thread_drop"] }}</td>
-                        <td class="{% if thread['thread_punt'] > 0 %}warning-cell{% endif %}">{{ thread["thread_punt"] }}</td>
-                        <td>
-                            {% if thread["table"] %}
-                                <details>
-                                    <summary>Показать</summary>
-                                    <table class="thread-table" border="1" cellpadding="6" cellspacing="0">
-                                        <thead>
-                                            <tr>
-                                            <th title="Имя узла VPP packet-processing graph">Name</th>
-                                            <th title="Текущее состояние узла: active, polling, running, event wait, any wait, suspended и т.д.">State</th>
-                                            <th title="Число вызовов узла с момента последнего clear runtime">Calls</th>
-                                            <th title="Число обработанных векторных элементов с момента последнего clear runtime">Vectors</th>
-                                            <th title="Число suspend-операций узла с момента последнего clear runtime">Suspends</th>
-                                            <th title="Средняя стоимость обработки: обычно packet-clocks на vector/packet; если vectors нет — на вызов или suspend">Clocks</th>
-                                            <th title="Среднее число векторов на один вызов узла">Vectors/Call</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for row in thread["table"] %}
-                                                <tr class="{% if ('drop' in row['table_process'] or 'punt' in row['table_process']) and row['table_vectors'] > 0 %}warning-row{% endif %}">
-                                                    <td>{{ row["table_process"] }}</td>
-                                                    <td class="{% if row['table_state'] == 'running' %}state-running{% endif %}">{{ row["table_state"] }}</td>
-                                                    <td>{{ row["table_calls"] }}</td>
-                                                    <td class="{% if ('drop' in row['table_process'] or 'punt' in row['table_process']) and row['table_vectors'] > 0 %}warning-cell{% endif %}">{{ row["table_vectors"] }}</td>
-                                                    <td>{{ row["table_suspends"] }}</td>
-                                                    <td>{{ row["table_clocks"] }}</td>
-                                                    <td>{{ row["table_vectors_per_call"] }}</td>
-                                                </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </details>
-                            {% else %}
-                                <span>Нет данных</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <p class="index-p">Сводная информация по потокам VPP</p>
+
+    <table class="index-table" border="1" cellpadding="6" cellspacing="0">
+        <thead>
+            <tr>
+                <th title="Индекс потока VPP в выводе show runtime">ID</th>
+                <th title="Имя потока VPP, например vpp_main или vpp_wk_0">Имя потока</th>
+                <th title="Логическое ядро CPU, к которому привязан поток">Lcore</th>
+                <th title="Время в секундах с момента последнего clear runtime">Time</th>
+                <th title="Средняя длина вектора для внутренних узлов потока; чем выше, тем больше пакетов VPP обрабатывает батчами">Internal node vector rate</th>
+                <th title="Число итераций основного цикла потока в секунду">Loops/sec</th>
+                <th title="Скорость входящих векторов в секунду">In</th>
+                <th title="Скорость исходящих векторов в секунду">Out</th>
+                <th title="Скорость отброшенных векторов в секунду">Drop</th>
+                <th title="Скорость punt-векторов в секунду">Punt</th>
+                <th title="Подробная таблица узлов данного потока">Таблица узлов</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for thread in parsed_show_runtime %}
+            <tr>
+                <td>{{ thread["thread_id"] }}</td>
+                <td>{{ thread["thread_name"] }}</td>
+                <td>{{ thread["thread_lcore"] }}</td>
+                <td>{{ thread["thread_time"] }}</td>
+                <td class="{% if thread['thread_vector_rate'] > 0 %}active-cell{% endif %}">{{ thread["thread_vector_rate"] }}</td>
+                <td>{{ thread["thread_loops_per_sec"] }}</td>
+                <td class="{% if thread['thread_in'] > 0 %}active-cell{% endif %}">{{ thread["thread_in"] }}</td>
+                <td class="{% if thread['thread_out'] > 0 %}active-cell{% endif %}">{{ thread["thread_out"] }}</td>
+                <td class="{% if thread['thread_drop'] > 0 %}warning-cell{% endif %}">{{ thread["thread_drop"] }}</td>
+                <td class="{% if thread['thread_punt'] > 0 %}warning-cell{% endif %}">{{ thread["thread_punt"] }}</td>
+                <td>
+                    {% if thread["table"] %}
+                    <details>
+                        <summary>Показать</summary>
+
+                        <table class="thread-table" border="1" cellpadding="6" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th title="Имя узла VPP packet-processing graph">Name</th>
+                                    <th title="Текущее состояние узла: active, polling, running, event wait, any wait, suspended и т.д.">State</th>
+                                    <th title="Число вызовов узла с момента последнего clear runtime">Calls</th>
+                                    <th title="Число обработанных векторных элементов с момента последнего clear runtime">Vectors</th>
+                                    <th title="Число suspend-операций узла с момента последнего clear runtime">Suspends</th>
+                                    <th title="Средняя стоимость обработки: обычно packet-clocks на vector/packet; если vectors нет — на вызов или suspend">Clocks</th>
+                                    <th title="Среднее число векторов на один вызов узла">Vectors/Call</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in thread["table"] %}
+                                <tr class="{% if ('drop' in row['table_process'] or 'punt' in row['table_process']) and row['table_vectors'] > 0 %}warning-row{% endif %}">
+                                    <td>{{ row["table_process"] }}</td>
+                                    <td class="{% if row['table_state'] == 'running' %}state-running{% endif %}">{{ row["table_state"] }}</td>
+                                    <td>{{ row["table_calls"] }}</td>
+                                    <td class="{% if ('drop' in row['table_process'] or 'punt' in row['table_process']) and row['table_vectors'] > 0 %}warning-cell{% endif %}">{{ row["table_vectors"] }}</td>
+                                    <td>{{ row["table_suspends"] }}</td>
+                                    <td>{{ row["table_clocks"] }}</td>
+                                    <td>{{ row["table_vectors_per_call"] }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </details>
+                    {% else %}
+                    <span>Нет данных</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+    {% endif %}
+
+    {% if mode == "cli_esr" %}
+    <h1 class="index-title">CLI ESR Observer</h1>
+    <p class="index-p">Вставьте вывод <code>CLI ESR</code> в поле ниже:</p>
+
+    <form class="index-form" method="post" action="/esr-cli/parse">
+        <div>
+            <textarea id="raw_text" name="raw_text" rows="30" cols="140">{{ raw_text }}</textarea>
+        </div>
+        <br>
+        <div>
+            <button type="submit">Разобрать</button>
+        </div>
+    </form>
+
+    {% if parsed_cli_esr is defined and not parsed_cli_esr %}
+    <p class="index-p">
+        Не удалось разобрать вывод CLI ESR.
+    </p>
+    {% endif %}
+
+    {% if parsed_cli_esr %}
+    <p class="index-p">Результат разбора CLI ESR</p>
+
+    <div class="index-form">
+        <textarea rows="30" cols="140" readonly>{% for line in parsed_cli_esr %}{{ line }}
+    {% endfor %}</textarea>
+    </div>
+    {% endif %}
     {% endif %}
 </body>
+
 </html>
