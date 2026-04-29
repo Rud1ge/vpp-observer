@@ -94,3 +94,11 @@ class ShowRuntime(Logs):
             threads.append(current_thread)
 
         return threads
+
+
+class CliESR(Logs):
+    def _clear_lines(self, collected_logs):
+        return [line.rstrip() for line in collected_logs.splitlines()]
+
+    def parsing(self):
+        return self.logs
