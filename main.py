@@ -17,7 +17,7 @@ async def index(request: Request):
         request=request,
         name="index.html",
         context={
-            "title": "Observer",
+            "title": "Eltex CLI Observer",
             "mode": None
         },
     )
@@ -41,7 +41,7 @@ async def show_runtime(request: Request, raw_text: str = Form(...)):
         request=request,
         name="index.html",
         context={
-            "title": "VPP Observer",
+            "title": "VPP NGFW Observer",
             "mode": "vpp_show_runtime",
             "raw_text": raw_text,
             "parsed_show_runtime": ShowRuntime(raw_text).parsing(),
@@ -55,7 +55,7 @@ async def esr_cli_page(request: Request):
         request=request,
         name="index.html",
         context={
-            "title": "ESR Observer",
+            "title": "ESR CLI Observer",
             "mode": "cli_esr",
         },
     )
@@ -67,7 +67,7 @@ async def cli_esr(request: Request, raw_text: str = Form(...)):
         request=request,
         name="index.html",
         context={
-            "title": "CLI ESR Observer",
+            "title": "ESR CLI Observer",
             "mode": "cli_esr",
             "raw_text": raw_text,
             "parsed_cli_esr": CliESR(raw_text).parsing(),

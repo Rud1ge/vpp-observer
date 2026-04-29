@@ -20,7 +20,7 @@
     </nav>
 
     {% if mode is none %}
-    <h1 class="index-title">Observer</h1>
+    <h1 class="index-title">Eltex CLI Observer</h1>
     <p class="index-p">Выберите режим разбора вывода.</p>
     {% endif %}
 
@@ -120,8 +120,8 @@
     {% endif %}
 
     {% if mode == "cli_esr" %}
-    <h1 class="index-title">CLI ESR Observer</h1>
-    <p class="index-p">Вставьте вывод <code>CLI ESR</code> в поле ниже:</p>
+    <h1 class="index-title">ESR CLI Observer</h1>
+    <p class="index-p">Вставьте вывод <code>ESR CLI</code> в поле ниже:</p>
 
     <form class="index-form" method="post" action="/esr-cli/parse">
         <div>
@@ -135,19 +135,19 @@
 
     {% if parsed_cli_esr is defined and not parsed_cli_esr %}
     <p class="index-p">
-        Не удалось разобрать вывод CLI ESR.
+        Не удалось разобрать вывод ESR CLI.
     </p>
     {% endif %}
 
     {% if parsed_cli_esr %}
-    <p class="index-p">Результат разбора CLI ESR</p>
+    <p class="index-p">Результат разбора ESR CLI</p>
 
-    <div class="index-form">
-        <textarea rows="30" cols="140" readonly>{% for line in parsed_cli_esr %}{{ line }}
-    {% endfor %}</textarea>
-    </div>
-    {% endif %}
-    {% endif %}
+<div class="index-form">
+    <textarea rows="30" cols="140" readonly>{% for line in parsed_cli_esr %}{{ line }}
+{% endfor %}</textarea>
+</div>
+{% endif %}
+{% endif %}
 </body>
 
 </html>
